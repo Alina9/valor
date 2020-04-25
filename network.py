@@ -44,7 +44,6 @@ class GaussianPolicy(nn.Module):
 class CategoricalPolicy(nn.Module):
     def __init__(self, input_dim, hidden_dims, activation, action_dim):
         super(CategoricalPolicy, self).__init__()
-
         self.logits = MLP(layers=[input_dim] + list(hidden_dims) + [action_dim], activation=activation)
 
     def forward(self, x, a=None):
@@ -94,7 +93,6 @@ class ActorCritic(nn.Module):
     def forward(self, x, a=None):
         pi, logp, logp_pi = self.policy(x, a)
         v = self.value_f(x)
-
         return pi, logp, logp_pi, v
 
 class Decoder(nn.Module):

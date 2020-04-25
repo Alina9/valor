@@ -19,17 +19,17 @@ def valor(env, actor_critic=ActorCritic, ac_kwargs=dict(), decoder=Decoder, dc_k
     np.random.seed(seed)
 
     #env
-    obs_dim = env.observation_space.shape
+    state_dim = env.observation_space.shape
     act_dim = env.action_space.shape[0]
 
     ac_kwargs['action_space'] = env.action_space
 
     # Model
-    actor_critic = actor_critic(input_dim=obs_dim[0]+con_dim, **ac_kwargs)
-    decoder = decoder(input_dim=obs_dim[0], context_dim=con_dim, **dc_kwargs)
+    actor_critic = actor_critic(input_dim=state_dim[0]+con_dim, **ac_kwargs)
+    decoder = decoder(input_dim=state_dim[0], context_dim=con_dim, **dc_kwargs)
 
     # Buffer
-    buffer = Buffer(con_dim, obs_dim[0], act_dim, episodes_per_epoch, max_ep_len, train_dc_interv, gamma, lam)
+    buffer = Buffer(con_dim, state_dim[0], act_dim, episodes_per_epoch, max_ep_len, train_dc_interv, gamma, lam)
 
     # Optimizers
     train_pi = torch.optim.Adam(actor_critic.policy.parameters(), lr=pi_lr)
@@ -91,9 +91,9 @@ def valor(env, actor_critic=ActorCritic, ac_kwargs=dict(), decoder=Decoder, dc_k
             step = 0
             for _ in range(max_ep_len):
                 step+=1
-                concat_obs = torch.cat([torch.Tensor(state.reshape(1, -1)), c_onehot.reshape(1, -1)], 1)
-                action, _, logp_t, v_t = actor_critic(concat_obs)
-                buffer.store(c, concat_obs.squeeze().detach().numpy(), action.detach().numpy(), reward, v_t.item(), logp_t.detach().numpy())
+                concat_state = torch.cat([torch.Tensor(state.reshape(1, -1)), c_onehot.reshape(1, -1)], 1)
+                action, _, logp_t, v_t = actor_critic(concat_state)
+                buffer.store(c, concat_state.squeeze().detach().numpy(), action.detach().numpy(), reward, v_t.item(), logp_t.detach().numpy())
 
                 state, reward, done, _ = env.step(action.detach().numpy()[0])
                 ep_reward += reward

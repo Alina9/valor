@@ -4,12 +4,12 @@ import scipy.signal
 
 
 class Buffer(object):
-    def __init__(self, con_dim, obs_dim, act_dim, batch_size, ep_len, dc_interv, gamma=0.99, lam=0.95):
+    def __init__(self, con_dim, state_dim, act_dim, batch_size, ep_len, dc_interv, gamma=0.99, lam=0.95):
         self.max_batch = batch_size
         self.dc_interv = dc_interv
         self.max_s = batch_size * ep_len
-        self.obs_dim = obs_dim
-        self.st = np.zeros((self.max_s, obs_dim + con_dim))
+        self.state_dim = state_dim
+        self.st = np.zeros((self.max_s, state_dim + con_dim))
         self.act = np.zeros((self.max_s, act_dim))
         self.rew = np.zeros(self.max_s)
         self.ret = np.zeros(self.max_s)
@@ -25,7 +25,7 @@ class Buffer(object):
         self.N = 11
 
         self.con = np.zeros(self.max_batch * self.dc_interv)
-        self.dcbuf = np.zeros((self.max_batch * self.dc_interv, self.N - 1, obs_dim))
+        self.dcbuf = np.zeros((self.max_batch * self.dc_interv, self.N - 1, state_dim))
 
         self.gamma = gamma
         self.lam = lam
@@ -46,7 +46,7 @@ class Buffer(object):
         for i in range(self.N - 1):
             prev = int(i * ep_l / (self.N - 1))
             succ = int((i + 1) * ep_l / (self.N - 1))
-            self.dcbuf[self.dc_eps, i] = self.st[start + succ][:self.obs_dim] - self.st[start + prev][:self.obs_dim]
+            self.dcbuf[self.dc_eps, i] = self.st[start + succ][:self.state_dim] - self.st[start + prev][:self.state_dim]
         return self.dcbuf[self.dc_eps]
 
     def end_episode(self, log_prob, last_val=0):
